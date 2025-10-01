@@ -12,10 +12,27 @@ class UserSeeder extends Seeder
     /**
      * Run the database seeds.
      */
-public function run(): void {
-    DB::table('users')->insert([
-        ['name' => 'Gudang A', 'email' => 'gudang.a@gmail.com', 'password' => Hash::make('gudang.a'), 'role' => 'gudang'],
-        ['name' => 'Dapur A', 'email' => 'dapur.a@gmail.com', 'password' => Hash::make('dapur.a'), 'role' => 'dapur'],
-    ]);
-}
+    public function run(): void
+    {
+        DB::table('users')->insert([
+            // Data Gudang A diganti dengan Budi Santoso
+            [
+                'name' => 'Budi Santoso',
+                'email' => 'budi.gudang@mbg.id',
+                'password' => Hash::make('gudang123'), 
+                'role' => 'gudang',
+                'created_at' => now(), 
+                'updated_at' => now()
+            ],
+            // Data Dapur A tetap ada
+            [
+                'name' => 'Dapur A',
+                'email' => 'dapur.a@gmail.com',
+                'password' => Hash::make('dapur.a'),
+                'role' => 'dapur',
+                'created_at' => now(),
+                'updated_at' => now()
+            ],
+        ]);
+    }
 }
