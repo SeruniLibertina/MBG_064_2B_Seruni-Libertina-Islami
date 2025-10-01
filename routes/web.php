@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\BahanBakuController;
 use App\Http\Controllers\AuthController;
 
 // Rute halaman utama
@@ -8,23 +9,24 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-// Rute untuk menampilkan form login
+// --- RUTE UNTUK AUTENTIKASI ---
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
-// Rute untuk memproses data dari form login
 Route::post('/login', [AuthController::class, 'login']);
-// Rute untuk logout
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 
-Route::middleware('auth')->group(function () {
-
-    // Rute sementara untuk halaman bahan baku
-    Route::get('/bahan-baku', function () {
-        // Cek role untuk keamanan tambahan
-        if (auth()->user()->role !== 'gudang') {
-            abort(403); // Akses ditolak jika bukan gudang
-        }
-        return '<h1>Selamat Datang di Halaman Bahan Baku</h1><p>Login Anda sebagai Petugas Gudang Berhasil!</p>';
-    });
-
+// --- RUTE UNTUK FITUR PETUGAS GUDANG ---
+// Grup rute ini hanya bisa diakses oleh user yang sudah login DAN memiliki role 'gudang'
+Route::middleware(['auth', 'role:gudang'])->group(function () {
+    
+    // Rute khusus untuk menampilkan halaman konfirmasi sebelum menghapus
+    Route::get('bahan-baku/{bahanBaku}/confirm-delete', [BahanBakuController::class, 'confirmDelete'])->name('bahan-baku.confirm-delete');
+    
+    Route::resource('bahan-baku', BahanBakuController::class);
+    // - bahan-baku.index   (Lihat semua data)
+    // - bahan-baku.create  (Tampilkan form tambah)
+    // - bahan-baku.store   (Simpan data baru)
+    // - bahan-baku.edit    (Tampilkan form edit)
+    // - bahan-baku.update  (Update data)
+    // - bahan-baku.destroy (Hapus data)
 });
