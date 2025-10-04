@@ -15,22 +15,25 @@ class BahanBakuController extends Controller
     {
         $bahanBakus = BahanBaku::orderBy('tanggal_kadaluarsa', 'asc')->get();
 
-        // Logika untuk update status otomatis sesuai aturan PDF
+        // Logika untuk update status otomatis
         foreach ($bahanBakus as $bahan) {
             $today = Carbon::today();
+            // Tentukan batas 3 hari dari sekarang
             $threeDaysFromNow = Carbon::today()->addDays(3);
             $expiryDate = Carbon::parse($bahan->tanggal_kadaluarsa);
             $status = 'tersedia';
 
             if ($bahan->jumlah == 0) {
                 $status = 'habis';
+            // 1. Cek dulu apakah sudah lewat tanggal kadaluarsa
             } elseif ($today->gt($expiryDate)) {
                 $status = 'kadaluarsa';
-            } elseif ($expiryDate->isBetween($today, $threeDaysFromNow)) { // <-- LOGIKA BARU YANG LEBIH AKURAT
+            // 2. LOGIKA BARU: Cek apakah tanggalnya ada di antara hari ini dan 3 hari ke depan
+            } elseif ($expiryDate->isBetween($today, $threeDaysFromNow)) {
                 $status = 'segera_kadaluarsa';
             }
 
-            // Update status di database jika ada perubahan
+            // Simpan perubahan status ke database hanya jika statusnya berbeda
             if ($bahan->status != $status) {
                 $bahan->status = $status;
                 $bahan->save();
@@ -56,7 +59,7 @@ class BahanBakuController extends Controller
         $request->validate([
             'nama' => 'required|string|max:120',
             'kategori' => 'required|string|max:60',
-            'jumlah' => 'required|integer|min:0',
+            'jumlah' => 'required|integer|min:1',
             'satuan' => 'required|string|max:20',
             'tanggal_masuk' => 'required|date',
             'tanggal_kadaluarsa' => 'required|date|after_or_equal:tanggal_masuk',
@@ -92,16 +95,14 @@ class BahanBakuController extends Controller
     {
         return view('bahan_baku.edit', ['bahan' => $bahanBaku]);
     }
-
     /**
      * Update the specified resource in storage.
      */
     public function update(Request $request, BahanBaku $bahanBaku)
-        {
-            
+    {
         // Sistem harus menolak update jika nilai stok < 0
         $request->validate([
-            'jumlah' => 'required|integer|min:0',
+            'jumlah' => 'required|integer|min:1',
         ]);
 
         $bahanBaku->update([

@@ -23,4 +23,11 @@ class BahanBaku extends Model
         'tanggal_kadaluarsa',
         'status',
     ];
+
+    // Di dalam class BahanBaku
+
+    public function permintaanDetails(): HasMany
+    {
+        return $this->hasMany(PermintaanDetail::class, 'bahan_id');
+    }
 }

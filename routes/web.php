@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BahanBakuController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\PermintaanController; 
 
 // Rute halaman utama
 Route::get('/', function () {
@@ -14,19 +15,22 @@ Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
+// --- RUTE UNTUK DASHBOARD (Bisa diakses semua user yang sudah login) ---
+Route::get('/dashboard', function () {
+    return view('dashboard');
+})->middleware('auth')->name('dashboard');
+
 
 // --- RUTE UNTUK FITUR PETUGAS GUDANG ---
-// Grup rute ini hanya bisa diakses oleh user yang sudah login DAN memiliki role 'gudang'
 Route::middleware(['auth', 'role:gudang'])->group(function () {
-    
-    // Rute khusus untuk menampilkan halaman konfirmasi sebelum menghapus
     Route::get('bahan-baku/{bahanBaku}/confirm-delete', [BahanBakuController::class, 'confirmDelete'])->name('bahan-baku.confirm-delete');
-    
     Route::resource('bahan-baku', BahanBakuController::class);
-    // - bahan-baku.index   (Lihat semua data)
-    // - bahan-baku.create  (Tampilkan form tambah)
-    // - bahan-baku.store   (Simpan data baru)
-    // - bahan-baku.edit    (Tampilkan form edit)
-    // - bahan-baku.update  (Update data)
-    // - bahan-baku.destroy (Hapus data)
+});
+
+// --- RUTE UNTUK FITUR PETUGAS DAPUR ---
+    Route::middleware(['auth', 'role:dapur'])->group(function () {
+    Route::get('/permintaan', [PermintaanController::class, 'index'])->name('permintaan.index');
+
+    Route::get('/permintaan/create', [PermintaanController::class, 'create'])->name('permintaan.create');
+    Route::post('/permintaan', [PermintaanController::class, 'store'])->name('permintaan.store');
 });

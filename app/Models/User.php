@@ -45,4 +45,10 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    // --- DEFINISI RELASI ---
+    public function permintaans(): HasMany
+    {
+        return $this->hasMany(Permintaan::class, 'pemohon_id');
+    }
 }
