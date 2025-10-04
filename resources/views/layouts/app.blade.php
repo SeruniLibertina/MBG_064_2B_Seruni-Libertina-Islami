@@ -9,21 +9,20 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <link href="{{ asset('css/style.css') }}" rel="stylesheet">
 </head>
 <body>
     <nav class="navbar navbar-expand-lg">
-        <div class="container d-flex justify-content-between align-items-center">
+        <div class="container">
             <a class="navbar-brand" href="{{ auth()->check() ? route('dashboard') : url('/') }}">
                 MBG Fresh
             </a>
-
             @auth
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
-                    <button type="submit" class="btn btn-secondary btn-sm">
+                    <button type="submit" class="btn btn-logout btn-sm">
                         Logout
                     </button>
                 </form>
@@ -31,7 +30,7 @@
         </div>
     </nav>
 
-    <main class="container py-5">
+    <main class="container py-4">
         @yield('content')
     </main>
 </body>

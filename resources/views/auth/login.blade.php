@@ -3,7 +3,7 @@
 @section('content')
 <div class="row justify-content-center">
     <div class="col-md-5">
-        <div class="card">
+        <div class="card login-card">
             <div class="card-header text-center">
                 <h2>Login Aplikasi MBG</h2>
             </div>
@@ -25,7 +25,7 @@
                         <input type="password" name="password" id="password" class="form-control" required>
                     </div>
                     <div class="d-grid mt-4">
-                        <button type="submit" class="btn btn-primary">Login</button>
+                        <button type="submit" class="btn btn-pink">Login</button>
                     </div>
                 </form>
             </div>

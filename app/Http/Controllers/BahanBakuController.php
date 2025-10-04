@@ -9,53 +9,56 @@ use Carbon\Carbon;
 class BahanBakuController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Menampilkan daftar semua bahan baku.
+     * Secara otomatis, fungsi ini juga akan mengupdate status bahan baku
+     * berdasarkan tanggal kadaluarsa.
      */
     public function index()
     {
+        // Ambil semua bahan baku, diurutkan berdasarkan tanggal kadaluarsa yang paling dekat
         $bahanBakus = BahanBaku::orderBy('tanggal_kadaluarsa', 'asc')->get();
 
         // Logika untuk update status otomatis
         foreach ($bahanBakus as $bahan) {
             $today = Carbon::today();
-            // Tentukan batas 3 hari dari sekarang
+            // Tentukan batas 3 hari dari sekarang untuk penanda 'segera kadaluarsa'
             $threeDaysFromNow = Carbon::today()->addDays(3);
             $expiryDate = Carbon::parse($bahan->tanggal_kadaluarsa);
-            $status = 'tersedia';
+            $status = 'tersedia'; // Status default
 
+            // Pengecekan status berdasarkan kondisi
             if ($bahan->jumlah == 0) {
                 $status = 'habis';
-            // 1. Cek dulu apakah sudah lewat tanggal kadaluarsa
             } elseif ($today->gt($expiryDate)) {
                 $status = 'kadaluarsa';
-            // 2. LOGIKA BARU: Cek apakah tanggalnya ada di antara hari ini dan 3 hari ke depan
             } elseif ($expiryDate->isBetween($today, $threeDaysFromNow)) {
                 $status = 'segera_kadaluarsa';
             }
 
-            // Simpan perubahan status ke database hanya jika statusnya berbeda
+            // Simpan perubahan status hanya jika ada perbedaan, biar tidak boros query
             if ($bahan->status != $status) {
                 $bahan->status = $status;
                 $bahan->save();
             }
         }
+        // Tampilkan halaman daftar bahan baku dengan data yang sudah diupdate
         return view('bahan_baku.index', ['bahanBakus' => $bahanBakus]);
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Menampilkan form untuk menambah bahan baku baru.
      */
     public function create()
     {
-        return view ('bahan_baku.create');
+        return view('bahan_baku.create');
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Menyimpan data bahan baku baru ke dalam database.
      */
     public function store(Request $request)
     {
-        // Validasi input sesuai aturan di PDF
+        // Validasi input dari user
         $request->validate([
             'nama' => 'required|string|max:120',
             'kategori' => 'required|string|max:60',
@@ -65,7 +68,7 @@ class BahanBakuController extends Controller
             'tanggal_kadaluarsa' => 'required|date|after_or_equal:tanggal_masuk',
         ]);
 
-        // Simpan data ke database
+        // Buat data baru di tabel bahan_bakus
         BahanBaku::create([
             'nama' => $request->nama,
             'kategori' => $request->kategori,
@@ -73,38 +76,32 @@ class BahanBakuController extends Controller
             'satuan' => $request->satuan,
             'tanggal_masuk' => $request->tanggal_masuk,
             'tanggal_kadaluarsa' => $request->tanggal_kadaluarsa,
-            'status' => 'tersedia', // Status awal 'Tersedia' sesuai PDF
+            'status' => 'tersedia', // Status awal saat bahan baku ditambahkan
         ]);
 
-        // Arahkan kembali ke halaman utama dengan pesan sukses
+        // Arahkan kembali ke halaman utama
         return redirect()->route('bahan-baku.index');
     }
 
     /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
+     * Menampilkan form untuk mengedit stok bahan baku.
      */
     public function edit(BahanBaku $bahanBaku)
     {
         return view('bahan_baku.edit', ['bahan' => $bahanBaku]);
     }
+
     /**
-     * Update the specified resource in storage.
+     * Mengupdate jumlah stok bahan baku.
      */
     public function update(Request $request, BahanBaku $bahanBaku)
     {
-        // Sistem harus menolak update jika nilai stok < 0
+        // Validasi jumlah stok baru, tidak boleh kurang dari 1
         $request->validate([
             'jumlah' => 'required|integer|min:1',
         ]);
 
+        // Update data jumlah
         $bahanBaku->update([
             'jumlah' => $request->jumlah,
         ]);
@@ -113,13 +110,13 @@ class BahanBakuController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Menghapus data bahan baku dari database.
      */
     public function destroy(BahanBaku $bahanBaku)
     {
-        // Sistem hanya mengizinkan penghapusan bahan baku yang berstatus kadaluarsa
+        // Hanya bahan baku yang sudah kadaluarsa yang bisa dihapus
         if ($bahanBaku->status != 'kadaluarsa') {
-            return redirect()->route('bahan-baku.index'); // Atau beri pesan error
+            return redirect()->route('bahan-baku.index')->with('error', 'Hanya bahan baku yang sudah kadaluarsa yang bisa dihapus.');
         }
 
         $bahanBaku->delete();
@@ -127,9 +124,11 @@ class BahanBakuController extends Controller
         return redirect()->route('bahan-baku.index');
     }
 
-        public function confirmDelete(BahanBaku $bahanBaku)
+    /**
+     * Menampilkan halaman konfirmasi sebelum menghapus.
+     */
+    public function confirmDelete(BahanBaku $bahanBaku)
     {
-        // Menampilkan data bahan baku yang akan dihapus
         return view('bahan_baku.confirm-delete', ['bahan' => $bahanBaku]);
     }
 }

@@ -4,7 +4,7 @@
 <div class="container">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h1>Riwayat Permintaan Bahan Baku</h1>
-        <a href="{{ route('permintaan.create') }}" class="btn btn-primary">Buat Permintaan Baru</a>
+        <a href="{{ route('permintaan.create') }}" class="btn btn-pink">Buat Permintaan Baru</a>
     </div>
 
     @forelse ($permintaans as $permintaan)
