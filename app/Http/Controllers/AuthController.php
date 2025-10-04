@@ -25,7 +25,7 @@ class AuthController extends Controller
             if (Auth::user()->role == 'gudang') {
                 return redirect()->intended('/bahan-baku');
             }
-            return redirect()->intended('/dashboard'); // Ganti ini jika dapur punya halaman sendiri
+            return redirect()->intended('/dashboard'); 
         }
 
         return back()->withErrors([

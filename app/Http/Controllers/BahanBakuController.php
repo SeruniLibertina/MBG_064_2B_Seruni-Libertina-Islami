@@ -18,13 +18,19 @@ class BahanBakuController extends Controller
         // Logika untuk update status otomatis sesuai aturan PDF
         foreach ($bahanBakus as $bahan) {
             $today = Carbon::today();
+            $threeDaysFromNow = Carbon::today()->addDays(3);
             $expiryDate = Carbon::parse($bahan->tanggal_kadaluarsa);
             $status = 'tersedia';
 
-            if ($bahan->jumlah == 0) $status = 'habis';
-            elseif ($today->gt($expiryDate)) $status = 'kadaluarsa';
-            elseif ($expiryDate->diffInDays($today) <= 3) $status = 'segera_kadaluarsa';
+            if ($bahan->jumlah == 0) {
+                $status = 'habis';
+            } elseif ($today->gt($expiryDate)) {
+                $status = 'kadaluarsa';
+            } elseif ($expiryDate->isBetween($today, $threeDaysFromNow)) { // <-- LOGIKA BARU YANG LEBIH AKURAT
+                $status = 'segera_kadaluarsa';
+            }
 
+            // Update status di database jika ada perubahan
             if ($bahan->status != $status) {
                 $bahan->status = $status;
                 $bahan->save();
@@ -82,17 +88,27 @@ class BahanBakuController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit(BahanBaku $bahanBaku)
     {
-        //
+        return view('bahan_baku.edit', ['bahan' => $bahanBaku]);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
-    {
-        //
+    public function update(Request $request, BahanBaku $bahanBaku)
+        {
+            
+        // Sistem harus menolak update jika nilai stok < 0
+        $request->validate([
+            'jumlah' => 'required|integer|min:0',
+        ]);
+
+        $bahanBaku->update([
+            'jumlah' => $request->jumlah,
+        ]);
+
+        return redirect()->route('bahan-baku.index');
     }
 
     /**
