@@ -114,8 +114,21 @@ class BahanBakuController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(BahanBaku $bahanBaku)
     {
-        //
+        // Sistem hanya mengizinkan penghapusan bahan baku yang berstatus kadaluarsa
+        if ($bahanBaku->status != 'kadaluarsa') {
+            return redirect()->route('bahan-baku.index'); // Atau beri pesan error
+        }
+
+        $bahanBaku->delete();
+
+        return redirect()->route('bahan-baku.index');
+    }
+
+        public function confirmDelete(BahanBaku $bahanBaku)
+    {
+        // Menampilkan data bahan baku yang akan dihapus
+        return view('bahan_baku.confirm-delete', ['bahan' => $bahanBaku]);
     }
 }

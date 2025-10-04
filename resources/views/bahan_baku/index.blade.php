@@ -35,7 +35,7 @@
                 </td>
                 <td>
                     <a href="{{ route('bahan-baku.edit', $bahan->id) }}" class="btn btn-sm btn-info">Edit</a>
-                    <a href="#" class="btn btn-sm btn-danger">Hapus</a>
+                    <a href="{{ route('bahan-baku.confirm-delete', $bahan->id) }}" class="btn btn-sm btn-danger">Hapus</a>
                 </td>
             </tr>
             @empty
